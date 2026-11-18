@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Conferma visita - Tool v1.31 - v1.31: download vie con la stessa richiesta del cruscotto; se fallisce usa la lista gia scaricata dal cruscotto - v1.30: elenco vie scaricato dal confine intero del Comune di Genova (prima un rettangolo che perdeva Pegli, Voltri, Nervi) - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
+<!-- Conferma visita - Tool v1.32 - v1.32: lettura CSV corretta (colonna DESVIA, non CODVIA) - v1.31: download vie con la stessa richiesta del cruscotto; se fallisce usa la lista gia scaricata dal cruscotto - v1.30: elenco vie scaricato dal confine intero del Comune di Genova (prima un rettangolo che perdeva Pegli, Voltri, Nervi) - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferma visita - v1.31</title>
+<title>Conferma visita - v1.32</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -84,7 +84,7 @@
 <div class="testata">
   <h1>Conferma visita</h1>
   <p>Francesco - Servizi Immobiliari Genova</p>
-  <span class="versione">Versione 1.31</span>
+  <span class="versione">Versione 1.32</span>
 </div>
 
 <div class="contenuto">
@@ -376,7 +376,7 @@ aggiorna();
       var sep = righe[0].split(';').length > righe[0].split(',').length ? ';' : ',';
       var intest = righe[0].split(sep).map(function (h) { return h.replace(/"/g, '').trim().toLowerCase(); });
       var col = -1;
-      intest.forEach(function (h, k) { if (col < 0 && /denom|nome|toponim|strada|via/.test(h)) col = k; });
+      col = intest.indexOf('desvia'); if (col < 0) intest.forEach(function (h, k) { if (col < 0 && /denom|nome|toponim|strada/.test(h)) col = k; });
       if (col < 0) col = 0;
       var set = {};
       righe.slice(1).forEach(function (riga) {
