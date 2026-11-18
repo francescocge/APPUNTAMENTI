@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Conferma visita - Tool v1.28 - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
+<!-- Conferma visita - Tool v1.29 - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferma visita - v1.28</title>
+<title>Conferma visita - v1.29</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -84,7 +84,7 @@
 <div class="testata">
   <h1>Conferma visita</h1>
   <p>Francesco - Servizi Immobiliari Genova</p>
-  <span class="versione">Versione 1.28</span>
+  <span class="versione">Versione 1.29</span>
 </div>
 
 <div class="contenuto">
@@ -125,6 +125,7 @@
   <label>Via / Indirizzo</label>
   <input type="text" id="via" list="elenco-vie" placeholder="inizia a scrivere la via">
   <datalist id="elenco-vie"></datalist>
+  <div id="suggerimenti-via" style="display:none;background:#fff;border:1px solid #d5dce6;border-radius:12px;margin-top:6px;max-height:260px;overflow-y:auto;box-shadow:0 6px 16px rgba(20,33,61,.12);"></div>
 </div>
 
 <div class="due">
@@ -642,5 +643,53 @@ aggiorna();
 })();
 </script>
 
+
+<script>
+(function () {
+  var CHIAVE = 'vie_genova_v1';
+  var campo = document.getElementById('via');
+  var box = document.getElementById('suggerimenti-via');
+
+  function elenco() {
+    try { return JSON.parse(localStorage.getItem(CHIAVE) || '[]'); } catch (e) { return []; }
+  }
+
+  function chiudi() { box.style.display = 'none'; box.innerHTML = ''; }
+
+  function mostraSuggerimenti() {
+    var q = campo.value.trim().toLowerCase();
+    if (q.length < 2) { chiudi(); return; }
+    var tutte = elenco();
+    var inizio = [], dentro = [];
+    tutte.forEach(function (n) {
+      var l = n.toLowerCase();
+      if (l.indexOf(q) === 0) inizio.push(n);
+      else if (l.indexOf(q) > 0) dentro.push(n);
+    });
+    var risultati = inizio.concat(dentro).slice(0, 12);
+    if (!risultati.length) { chiudi(); return; }
+    box.innerHTML = '';
+    risultati.forEach(function (n) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = n;
+      b.style.cssText = 'display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #eef1f5;padding:12px 14px;font-size:16px;color:#14213d;cursor:pointer;';
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      b.addEventListener('click', function () {
+        campo.value = n;
+        chiudi();
+        campo.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      box.appendChild(b);
+    });
+    box.style.display = 'block';
+  }
+
+  campo.setAttribute('autocomplete', 'off');
+  campo.addEventListener('input', mostraSuggerimenti);
+  campo.addEventListener('focus', mostraSuggerimenti);
+  campo.addEventListener('blur', function () { setTimeout(chiudi, 150); });
+})();
+</script>
 </body>
 </html>
