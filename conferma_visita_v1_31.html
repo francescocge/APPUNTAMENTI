@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Conferma visita - Tool v1.30 - v1.30: elenco vie scaricato dal confine intero del Comune di Genova (prima un rettangolo che perdeva Pegli, Voltri, Nervi) - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
+<!-- Conferma visita - Tool v1.31 - v1.31: download vie con la stessa richiesta del cruscotto; se fallisce usa la lista gia scaricata dal cruscotto - v1.30: elenco vie scaricato dal confine intero del Comune di Genova (prima un rettangolo che perdeva Pegli, Voltri, Nervi) - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferma visita - v1.30</title>
+<title>Conferma visita - v1.31</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -84,7 +84,7 @@
 <div class="testata">
   <h1>Conferma visita</h1>
   <p>Francesco - Servizi Immobiliari Genova</p>
-  <span class="versione">Versione 1.30</span>
+  <span class="versione">Versione 1.31</span>
 </div>
 
 <div class="contenuto">
@@ -322,7 +322,7 @@ aggiorna();
 <script>
 (function () {
   var CHIAVE = 'vie_genova_v1';
-  var QUERY = '[out:json][timeout:90];area["name"="Genova"]["admin_level"="8"]->.a;way["highway"]["name"](area.a);out tags;';
+  var QUERY = '[out:json][timeout:60];area["name"="Genova"]["admin_level"="8"]->.a;way["highway"]["name"](area.a);out tags;';
   var SERVER = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
 
   function mostra(nomi) {
@@ -336,7 +336,15 @@ aggiorna();
 
   function scarica(i, btn, motivo) {
     if (i >= SERVER.length) {
-      document.getElementById('stato-vie').textContent = 'Non riesco a scaricare le vie (' + motivo + '). Usa il CSV del Comune.';
+      try {
+        var c = JSON.parse(localStorage.getItem('cruscotto_vie_genova_v1') || 'null');
+        if (c && c.v && c.v.length) {
+          mostra(c.v); salva(c.v); btn.disabled = false;
+          document.getElementById('stato-vie').textContent = c.v.length + ' vie prese dalla lista gia scaricata nel cruscotto.';
+          return;
+        }
+      } catch (e) {}
+      document.getElementById('stato-vie').textContent = 'Non riesco a scaricare le vie (' + motivo + '). Apri prima il cruscotto (Anticipo o Conferma breve) e scarica l\'elenco, poi torna qui. Oppure usa il CSV del Comune.';
       btn.disabled = false;
       return;
     }
