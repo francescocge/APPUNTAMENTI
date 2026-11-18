@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<!-- Cruscotto Messaggi WhatsApp - Servizi Immobiliari Genova - v1.0 -->
+<!-- Cruscotto Messaggi WhatsApp - Servizi Immobiliari Genova - v1.1 -->
+<!-- v1.1: aggiunta scheda "Scheda visita" (carica conferma_visita_v1_28.html); "Conferma" rinominata "Conferma breve" -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Cruscotto Messaggi - v1.0</title>
+<title>Cruscotto Messaggi - v1.1</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -46,13 +47,13 @@
 
   main { max-width: 560px; margin: 0 auto; padding: 20px 16px; }
 
-  .tabs { display: flex; gap: 12px; margin-bottom: 20px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
   .tab {
     flex: 1;
-    padding: 14px 10px;
+    padding: 14px 6px;
     border: none;
     border-radius: 14px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     background: linear-gradient(#ffffff, #dfe5ee);
@@ -174,6 +175,24 @@
   .btn3d.off { opacity: 0.4; pointer-events: none; }
   .hint { font-size: 12px; color: var(--grigio); text-align: center; margin-top: 12px; }
 
+  #frameScheda {
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    background: #f3f5f8;
+    min-height: 600px;
+  }
+  .avviso-scheda {
+    font-size: 12px;
+    color: var(--grigio);
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -182,66 +201,80 @@
 <header>
   <h1>Cruscotto Messaggi</h1>
   <p>Servizi Immobiliari Genova · Francesco</p>
-  <span class="versione">v1.0</span>
+  <span class="versione">v1.1</span>
 </header>
 
 <main>
 
   <div class="tabs">
     <button class="tab attiva" id="tabAnticipo" onclick="setTab('anticipo')">Anticipo</button>
-    <button class="tab" id="tabConferma" onclick="setTab('conferma')">Conferma</button>
+    <button class="tab" id="tabConferma" onclick="setTab('conferma')">Conferma breve</button>
+    <button class="tab" id="tabScheda" onclick="setTab('scheda')">Scheda visita</button>
   </div>
 
-  <div class="card">
+  <!-- SEZIONE MESSAGGI: Anticipo e Conferma breve -->
+  <div id="sezioneMessaggi">
 
-    <div class="field">
-      <label>Numero WhatsApp (con prefisso)</label>
-      <input type="tel" id="numero" placeholder="+393331234567" oninput="aggiorna()">
-    </div>
+    <div class="card">
 
-    <div class="field">
-      <label>Via</label>
-      <input type="text" id="via" list="listaVie" placeholder="Inizia a scrivere, es. Via Ro..." autocomplete="off" oninput="aggiorna()">
-      <datalist id="listaVie"></datalist>
-      <div class="stato-vie" id="statoVie">Carico le vie di Genova...</div>
-      <button class="btn-piccolo" onclick="caricaVie(true)">🔄 Aggiorna elenco vie</button>
-    </div>
-
-    <div class="row">
       <div class="field">
-        <label>Civico</label>
-        <input type="text" id="civico" placeholder="es. 12" oninput="aggiorna()">
+        <label>Numero WhatsApp (con prefisso)</label>
+        <input type="tel" id="numero" placeholder="+393331234567" oninput="aggiorna()">
       </div>
+
       <div class="field">
-        <label>Orario</label>
-        <input type="text" id="orario" placeholder="es. 17:30" oninput="aggiorna()">
+        <label>Via</label>
+        <input type="text" id="via" list="listaVie" placeholder="Inizia a scrivere, es. Via Ro..." autocomplete="off" oninput="aggiorna()">
+        <datalist id="listaVie"></datalist>
+        <div class="stato-vie" id="statoVie">Carico le vie di Genova...</div>
+        <button class="btn-piccolo" onclick="caricaVie(true)">🔄 Aggiorna elenco vie</button>
       </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Civico</label>
+          <input type="text" id="civico" placeholder="es. 12" oninput="aggiorna()">
+        </div>
+        <div class="field">
+          <label>Orario</label>
+          <input type="text" id="orario" placeholder="es. 17:30" oninput="aggiorna()">
+        </div>
+      </div>
+
+      <div class="field" id="campoData">
+        <label>Data (gg/mm)</label>
+        <input type="text" id="data" placeholder="es. 18/2" oninput="aggiorna()">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Saluto</label>
+          <select id="saluto" onchange="aggiorna()">
+            <option value="auto">Automatico</option>
+            <option value="Buongiorno">Buongiorno</option>
+            <option value="Buonasera">Buonasera</option>
+          </select>
+          <div class="hint-small">Ora: <span id="salutoAdesso">-</span></div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="field" id="campoData">
-      <label>Data (gg/mm)</label>
-      <input type="text" id="data" placeholder="es. 18/2" oninput="aggiorna()">
-    </div>
+    <div class="preview-label">Anteprima messaggio</div>
+    <div class="preview-box" id="preview">Compila i campi qui sopra...</div>
 
-    <div class="row">
-      <div class="field">
-        <label>Saluto</label>
-        <select id="saluto" onchange="aggiorna()">
-          <option value="auto">Automatico</option>
-          <option value="Buongiorno">Buongiorno</option>
-          <option value="Buonasera">Buonasera</option>
-        </select>
-        <div class="hint-small">Ora: <span id="salutoAdesso">-</span></div>
-      </div>
-    </div>
+    <a class="btn3d off" id="sendBtn" href="#">📲 Apri in WhatsApp</a>
+    <p class="hint">Il testo sarà già scritto: premi solo Invia</p>
 
   </div>
 
-  <div class="preview-label">Anteprima messaggio</div>
-  <div class="preview-box" id="preview">Compila i campi qui sopra...</div>
-
-  <a class="btn3d off" id="sendBtn" href="#">📲 Apri in WhatsApp</a>
-  <p class="hint">Il testo sarà già scritto: premi solo Invia</p>
+  <!-- SEZIONE SCHEDA VISITA: carica il tool conferma_visita_v1_28.html -->
+  <div id="sezioneScheda" class="hidden">
+    <div class="avviso-scheda">
+      La scheda visita è il tool completo (archivio, planimetria, link). Il file <strong>conferma_visita_v1_28.html</strong> deve stare nella <strong>stessa cartella</strong> di questo file.
+    </div>
+    <iframe id="frameScheda" src="conferma_visita_v1_28.html" allow="web-share; clipboard-write" title="Scheda visita"></iframe>
+  </div>
 
 </main>
 
@@ -294,8 +327,10 @@ function aggiorna() {
   var civico = val('civico');
   var orario = val('orario');
   var data = val('data');
+  var sceltaSaluto = document.getElementById('saluto').value;
 
-  document.getElementById('salutoAdesso').textContent = new Date().getHours() < ORA_SERA && document.getElementById('saluto').value === 'auto' ? 'Buongiorno' : (document.getElementById('saluto').value === 'auto' ? 'Buonasera' : saluto());
+  document.getElementById('salutoAdesso').textContent =
+    sceltaSaluto !== 'auto' ? sceltaSaluto : (new Date().getHours() < ORA_SERA ? 'Buongiorno' : 'Buonasera');
 
   var testoCompleto = via && civico && orario && (isAnticipo || data);
   var testo = '';
@@ -320,8 +355,29 @@ function setTab(t) {
   tabAttiva = t;
   document.getElementById('tabAnticipo').classList.toggle('attiva', t === 'anticipo');
   document.getElementById('tabConferma').classList.toggle('attiva', t === 'conferma');
-  document.getElementById('campoData').classList.toggle('hidden', t === 'anticipo');
-  aggiorna();
+  document.getElementById('tabScheda').classList.toggle('attiva', t === 'scheda');
+
+  var iMessaggi = t !== 'scheda';
+  document.getElementById('sezioneMessaggi').classList.toggle('hidden', !iMessaggi);
+  document.getElementById('sezioneScheda').classList.toggle('hidden', iMessaggi);
+
+  if (iMessaggi) {
+    document.getElementById('campoData').classList.toggle('hidden', t === 'anticipo');
+    aggiorna();
+  } else {
+    adattaIframe();
+  }
+}
+
+// ===== ALTEZZA DELLA SCHEDA VISITA (niente scroll dentro scroll) =====
+function adattaIframe() {
+  var f = document.getElementById('frameScheda');
+  try {
+    var d = f.contentDocument;
+    if (d && d.documentElement) {
+      f.style.height = d.documentElement.scrollHeight + 'px';
+    }
+  } catch (e) { /* ignoro */ }
 }
 
 // ===== VIE DI GENOVA DAL WEB =====
@@ -410,6 +466,8 @@ document.getElementById('campoData').classList.add('hidden');
 aggiorna();
 caricaVie(false);
 setInterval(aggiorna, 60000); // aggiorna il saluto quando cambia l'ora
+setInterval(function () { if (tabAttiva === 'scheda') adattaIframe(); }, 1000);
+document.getElementById('frameScheda').addEventListener('load', adattaIframe);
 </script>
 
 </body>

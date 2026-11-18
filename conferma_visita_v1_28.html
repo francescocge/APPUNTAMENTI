@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<!-- Conferma visita - Tool v1.28 - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conferma visita - v1.28</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blu: #1f3a5f; --blu-chiaro: #2e5a88; --grigio: #5b6470;
+    --grigio-chiaro: #f3f5f8; --oro: #b8922e; --oro-chiaro: #d9b75c; --bordo: #d5dbe3;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--grigio-chiaro);
+    color: #222;
+    min-height: 100vh;
+    padding: 0 0 40px;
+    font-size: 16px;
+  }
+  .testata {
+    background: linear-gradient(135deg, var(--blu), var(--blu-chiaro));
+    color: #fff;
+    padding: 28px 20px 24px;
+    border-bottom: 4px solid var(--oro);
+    text-align: center;
+  }
+  .testata h1 { font-size: 20px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+  .testata p { font-size: 13px; opacity: .9; margin-top: 4px; }
+  .versione {
+    display: inline-block; margin-top: 10px; padding: 3px 10px;
+    border: 1px solid var(--oro-chiaro); border-radius: 20px;
+    color: var(--oro-chiaro); font-size: 12px;
+  }
+  .contenuto { max-width: 560px; margin: 0 auto; padding: 18px 16px; }
+  .scheda {
+    background: #fff; border: 1px solid var(--bordo); border-radius: 18px;
+    padding: 20px 18px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(31,58,95,.07);
+  }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .due { display: grid; grid-template-columns: 1fr; gap: 0; }
+  @media (min-width: 480px) { .due { grid-template-columns: 1fr 1fr; gap: 12px; } }
+  label {
+    display: block; font-size: 12px; font-weight: 600; color: var(--blu);
+    text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;
+  }
+  input, select {
+    width: 100%; background: #fff; border: 1px solid var(--bordo); border-radius: 12px;
+    padding: 13px 14px; color: #222; font-size: 16px; outline: none;
+    -webkit-appearance: none; font-family: inherit;
+  }
+  input:focus, select:focus { border-color: var(--oro); box-shadow: 0 0 0 3px rgba(184,146,46,.15); }
+  .preview-box {
+    background: #fbf8f0; border: 1px solid #e8dcb8; border-radius: 14px;
+    padding: 10px 12px; font-size: 13px; line-height: 1.5; color: #3a3a3a; letter-spacing: .01em;
+    min-height: 100px; white-space: pre-wrap; word-break: break-word; margin-bottom: 18px;
+  }
+  .btn {
+    display: block; width: 100%; text-align: center; text-decoration: none;
+    background: linear-gradient(180deg, var(--oro-chiaro), var(--oro));
+    color: #2b2110; border: none; border-radius: 14px; padding: 16px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 0 #7d6119, 0 6px 12px rgba(0,0,0,.15);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #7d6119; }
+  .hint { font-size: 12px; color: var(--grigio); text-align: center; margin-top: 12px; line-height: 1.5; }
+  .etichetta { font-size: 12px; font-weight: 600; color: var(--blu); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; display: block; }
+  .btn-piccolo {
+    display: inline-block; width: auto; padding: 9px 14px; font-size: 14px; font-weight: 600;
+    color: #fff; border: none; border-radius: 10px; cursor: pointer;
+    background: linear-gradient(180deg, #2e5a88, #1f3a5f);
+    box-shadow: 0 3px 0 #132a47, 0 4px 8px rgba(0,0,0,.12);
+  }
+  .btn-piccolo:active { transform: translateY(2px); box-shadow: 0 1px 0 #132a47; }
+  .btn-piccolo:disabled { opacity: .5; }
+</style>
+</head>
+<body>
+
+
+<div class="testata">
+  <h1>Conferma visita</h1>
+  <p>Francesco - Servizi Immobiliari Genova</p>
+  <span class="versione">Versione 1.28</span>
+</div>
+
+<div class="contenuto">
+<div class="scheda">
+<span class="etichetta">Visite salvate</span>
+<div class="field">
+  <select id="archivio"><option value="">Scegli una visita salvata</option></select>
+</div>
+<div class="bottoni-arch" style="display:flex;gap:10px;flex-wrap:wrap;">
+  <button class="btn-piccolo" type="button" id="btn-salva-visita">Salva come nuova visita</button>
+  <button class="btn-piccolo" type="button" id="btn-aggiorna-visita">Aggiorna visita selezionata</button>
+  <button class="btn-piccolo" type="button" id="btn-nuovo-cliente">Nuovo cliente, stesso immobile</button>
+  <button class="btn-piccolo" type="button" id="btn-nuovo-zero">Nuovo appuntamento da zero</button>
+  <button class="btn-piccolo" type="button" id="btn-elimina-visita" style="background:linear-gradient(180deg,#8a8f98,#5b6470);box-shadow:0 3px 0 #3d434d;">Elimina visita</button>
+</div>
+<div class="field" style="margin-top:14px;">
+  <label>Copia di sicurezza</label>
+  <button class="btn-piccolo" type="button" id="btn-esporta">Esporta archivio (scarica file)</button>
+  <div style="margin-top:10px;">
+    <input type="file" id="file-importa" accept=".json,application/json" style="font-size:13px;">
+    <div class="hint" style="text-align:left;">Per ripristinare: scegli il file salvato in precedenza. Le visite già presenti non vengono duplicate.</div>
+  </div>
+</div>
+<p class="hint" id="stato-archivio" style="text-align:left;margin-top:10px;">Le visite restano salvate su questo dispositivo.</p>
+</div>
+<div class="scheda">
+<div class="field">
+  <label>Numero WhatsApp del cliente (con prefisso)</label>
+  <input type="tel" id="numero" placeholder="+393331234567">
+</div>
+
+<div class="field">
+  <label>Nome cliente (facoltativo)</label>
+  <input type="text" id="nome" placeholder="es. Mario">
+</div>
+
+<div class="field">
+  <label>Via / Indirizzo</label>
+  <input type="text" id="via" list="elenco-vie" placeholder="inizia a scrivere la via">
+  <datalist id="elenco-vie"></datalist>
+</div>
+
+<div class="due">
+  <div class="field">
+    <label>Data</label>
+    <input type="date" id="data">
+  </div>
+  <div class="field">
+    <label>Orario</label>
+    <input type="time" id="orario">
+  </div>
+</div>
+
+<div class="due">
+  <div class="field">
+    <label>Superficie (m²)</label>
+    <input type="text" id="mq" placeholder="es. 83" inputmode="decimal">
+  </div>
+  <div class="field">
+    <label>Rendita catastale (€)</label>
+    <input type="text" id="rendita" placeholder="es. 883,14" inputmode="decimal">
+  </div>
+</div>
+
+
+
+<div class="field">
+  <label>Altre caratteristiche (una per riga)</label>
+  <textarea id="altre" rows="6" style="width:100%;background:#fff;border:1px solid #d5dbe3;border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;color:#222;resize:vertical;">2 camere
+1 bagno
+Cucina e sala da pranzo
+Ripostiglio
+Armadio a muro
+Balcone</textarea>
+  <div class="hint" style="text-align:left;">Precompilato dalla planimetria: correggi o aggiungi quello che serve (piano, ascensore, cantina, box...).</div>
+</div>
+
+<div class="field" style="display:none;">
+  <label style="text-transform:none;letter-spacing:0;font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;">
+    <input type="checkbox" id="mostra-link" style="width:20px;height:20px;accent-color:#b8922e;">
+    Includi i link nel messaggio (WhatsApp mostra un'anteprima in cima)
+  </label>
+  <div class="hint" style="text-align:left;">Se lasci la casella vuota, niente link: manda la planimetria come allegato.</div>
+</div>
+
+<div class="field">
+  <label>Link annuncio (immobiliare.it, facoltativo)</label>
+  <input type="url" id="annuncio" placeholder="incolla il link dell'annuncio">
+</div>
+
+<div class="field">
+  <label>Link planimetria (Google Drive o iCloud, facoltativo)</label>
+  <input type="url" id="link" placeholder="incolla qui il link condiviso">
+</div>
+
+<div class="field">
+  <label>Orientamento (facoltativo)</label>
+  <select id="orient">
+    <option value="">Non indicare</option>
+    <option>Nord</option><option>Nord-Est</option><option>Est</option><option>Sud-Est</option>
+    <option>Sud</option><option>Sud-Ovest</option><option>Ovest</option><option>Nord-Ovest</option>
+  </select>
+</div>
+
+</div>
+<div class="scheda">
+<span class="etichetta">Planimetria da allegare</span>
+<div class="field">
+  <input type="file" id="file-planimetria" accept="image/*,application/pdf">
+  <div class="hint" id="nome-planimetria" style="text-align:left;">Nessun file scelto. Scegli la planimetria da File, Drive o Foto.</div>
+</div>
+<button class="btn-piccolo" type="button" id="btn-allega">Invia planimetria su WhatsApp</button>
+<p class="hint" id="stato-allegato" style="text-align:left;margin-top:10px;">Prima invia il testo con Apri in WhatsApp, poi questo pulsante per la planimetria. Nel menu scegli WhatsApp e il cliente.</p>
+</div>
+<div class="scheda">
+<span class="etichetta">Anteprima messaggio</span>
+<div class="preview-box" id="preview">Compila i campi qui sopra...</div>
+
+<a class="btn" id="sendBtn" href="#" target="_blank" rel="noopener">Apri in WhatsApp</a>
+<p class="hint">Il testo è già scritto: premi Invia.<br>Ricordati di allegare la planimetria con la graffetta (WhatsApp non la allega da solo).</p>
+<a class="btn" id="linkBtn" href="#" target="_blank" rel="noopener" style="margin-top:14px;">Invia i link su WhatsApp</a>
+<p class="hint">Secondo messaggio: solo planimetria e annuncio, così l'anteprima non copre la conferma.</p>
+
+</div>
+<div class="scheda">
+<div class="field">
+  <label>Elenco vie di Genova</label>
+  <button class="btn-piccolo" type="button" id="btn-vie">Scarica elenco vie</button>
+  <input type="file" id="file-vie" accept=".csv,text/csv,text/plain" style="font-size:13px;">
+  <div class="hint" id="stato-vie" style="margin-top:8px;text-align:left;">Premi "Scarica elenco vie" (serve internet). In alternativa carica il CSV dello stradario del Comune.</div>
+</div>
+</div>
+</div>
+<script>
+function dataIt(iso) {
+  if (!iso) return '';
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function numero(txt) {
+  var n = parseFloat(String(txt || '').replace(/\./g, '').replace(',', '.'));
+  return isNaN(n) ? NaN : n;
+}
+
+function euro(n) {
+  return n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function testo(d) {
+  var r = [];
+  r.push('Buongiorno' + (d.nome ? ' *' + d.nome + '*' : '') + ', sono *Francesco* di Servizi Immobiliari Genova.');
+  r.push('');
+  r.push('Visita: ' + d.via + (d.data ? ', ' + dataIt(d.data) : '') + ' ore ' + d.orario + '.');
+
+  var car = [];
+  if (d.orient) car.push('Orientamento ' + d.orient);
+  if (d.mq) car.push('Superficie ' + d.mq + ' m²');
+  if (d.rendita) car.push('Rendita catastale € ' + d.rendita);
+  (d.altre || []).forEach(function (x) { car.push(x); });
+  if (car.length) {
+    r.push('');
+    r.push('*Caratteristiche*');
+    car.forEach(function (c) { r.push('- ' + c); });
+  }
+
+  r.push('');
+  r.push('Per qualsiasi necessità mi scriva pure.');
+  r.push('A presto, *Francesco*');
+
+  return r.join('\n');
+}
+
+function aggiorna() {
+  var numeroTel = document.getElementById('numero').value.trim().replace(/\s/g, '').replace(/^\+/, '');
+  var d = {
+    nome: document.getElementById('nome').value.trim(),
+    via: document.getElementById('via').value.trim(),
+    data: document.getElementById('data').value,
+    orario: document.getElementById('orario').value,
+    orient: document.getElementById('orient').value,
+    link: document.getElementById('link').value.trim(),
+    annuncio: document.getElementById('annuncio').value.trim(),
+    mq: document.getElementById('mq').value.trim(),
+    rendita: document.getElementById('rendita').value.trim(),
+    altre: document.getElementById('altre').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean),
+    mostraLink: document.getElementById('mostra-link').checked
+  };
+
+  var mancano = [];
+  if (!d.via) mancano.push('via');
+  if (!d.orario) mancano.push('orario');
+  var preview = document.getElementById('preview');
+  var btn = document.getElementById('sendBtn');
+
+  if (d.via && d.orario) {
+    preview.textContent = testo(d);
+  } else {
+    preview.textContent = 'Anteprima non ancora pronta. Mancano: ' + mancano.join(', ') + '.';
+  }
+
+  if (d.via && d.orario && numeroTel) {
+    btn.href = 'https://wa.me/' + numeroTel + '?text=' + encodeURIComponent(testo(d));
+    btn.style.opacity = '1';
+  } else {
+    btn.href = '#';
+    btn.style.opacity = '0.4';
+  }
+
+  var lb = document.getElementById('linkBtn');
+  var blocchiLink = [];
+  if (d.link) blocchiLink.push('Planimetria:\n' + d.link);
+  if (d.annuncio) blocchiLink.push('Annuncio:\n' + d.annuncio);
+  var titoloLink = '*Appartamento' + (d.via ? ' - ' + d.via : '') + '*';
+  if (numeroTel && blocchiLink.length) {
+    lb.href = 'https://wa.me/' + numeroTel + '?text=' + encodeURIComponent(titoloLink + '\n\n' + blocchiLink.join('\n\n'));
+    lb.style.opacity = '1';
+  } else {
+    lb.href = '#';
+    lb.style.opacity = '0.4';
+  }
+}
+
+var ids = ['numero', 'nome', 'via', 'data', 'orario', 'orient', 'link', 'annuncio', 'mq', 'rendita', 'altre', 'mostra-link'];
+
+ids.forEach(function (id) {
+  document.getElementById(id).addEventListener('input', aggiorna);
+  document.getElementById(id).addEventListener('change', aggiorna);
+});
+aggiorna();
+</script>
+
+
+<script>
+(function () {
+  var CHIAVE = 'vie_genova_v1';
+  var QUERY = '[out:json][timeout:60];way["highway"]["name"](44.33,8.80,44.52,9.03);out tags;';
+  var SERVER = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+
+  function mostra(nomi) {
+    var dl = document.getElementById('elenco-vie');
+    dl.innerHTML = '';
+    nomi.forEach(function (n) { var o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+    document.getElementById('stato-vie').textContent = nomi.length + ' vie pronte. Scrivi le prime lettere nel campo Via.';
+  }
+
+  function salva(nomi) { try { localStorage.setItem(CHIAVE, JSON.stringify(nomi)); } catch (e) {} }
+
+  function scarica(i, btn, motivo) {
+    if (i >= SERVER.length) {
+      document.getElementById('stato-vie').textContent = 'Non riesco a scaricare le vie (' + motivo + '). Usa il CSV del Comune.';
+      btn.disabled = false;
+      return;
+    }
+    document.getElementById('stato-vie').textContent = 'Scarico le vie... attendi.';
+    fetch(SERVER[i], { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(QUERY) })
+      .then(function (r) { if (!r.ok) throw new Error('errore ' + r.status); return r.json(); })
+      .then(function (j) {
+        var nomi = (j.elements || []).map(function (e) { return e.tags && e.tags.name; }).filter(Boolean);
+        nomi = nomi.filter(function (n, k, a) { return a.indexOf(n) === k; }).sort(function (a, b) { return a.localeCompare(b, 'it'); });
+        if (!nomi.length) throw new Error('nessuna via ricevuta');
+        mostra(nomi); salva(nomi); btn.disabled = false;
+      })
+      .catch(function (err) { scarica(i + 1, btn, err.message || 'connessione'); });
+  }
+
+  document.getElementById('btn-vie').addEventListener('click', function () {
+    this.disabled = true;
+    scarica(0, this, 'connessione');
+  });
+
+  // CSV del Comune (riserva)
+  document.getElementById('file-vie').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var righe = String(r.result || '').split(/\r?\n/).filter(Boolean);
+      if (righe.length < 2) { document.getElementById('stato-vie').textContent = 'File vuoto o non leggibile.'; return; }
+      var sep = righe[0].split(';').length > righe[0].split(',').length ? ';' : ',';
+      var intest = righe[0].split(sep).map(function (h) { return h.replace(/"/g, '').trim().toLowerCase(); });
+      var col = -1;
+      intest.forEach(function (h, k) { if (col < 0 && /denom|nome|toponim|strada|via/.test(h)) col = k; });
+      if (col < 0) col = 0;
+      var set = {};
+      righe.slice(1).forEach(function (riga) {
+        var v = (riga.split(sep)[col] || '').replace(/"/g, '').trim();
+        if (v && !/^[0-9\s.,-]+$/.test(v)) set[v] = true;
+      });
+      var nomi = Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'it'); });
+      mostra(nomi); salva(nomi);
+    };
+    r.readAsText(f, 'UTF-8');
+  });
+
+  // Ripristino elenco salvato
+  try {
+    var salvate = JSON.parse(localStorage.getItem(CHIAVE) || '[]');
+    if (salvate.length) mostra(salvate);
+  } catch (e) {}
+})();
+</script>
+
+
+<script>
+(function () {
+  var CHIAVE = 'archivio_visite_v1';
+
+  function leggi() { try { return JSON.parse(localStorage.getItem(CHIAVE) || '[]'); } catch (e) { return []; } }
+  function scrivi(l) { try { localStorage.setItem(CHIAVE, JSON.stringify(l)); return true; } catch (e) { return false; } }
+
+  function campi() {
+    return {
+      numero: document.getElementById('numero').value.trim(),
+      nome: document.getElementById('nome').value.trim(),
+      via: document.getElementById('via').value.trim(),
+      data: document.getElementById('data').value,
+      orario: document.getElementById('orario').value,
+      orient: document.getElementById('orient').value,
+      link: document.getElementById('link').value.trim(),
+      annuncio: document.getElementById('annuncio').value.trim(),
+      mq: document.getElementById('mq').value.trim(),
+      rendita: document.getElementById('rendita').value.trim(),
+      altre: document.getElementById('altre').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean),
+      mostraLink: document.getElementById('mostra-link').checked
+    };
+  }
+
+  function etichetta(r) {
+    var parti = [r.via || 'Senza via'];
+    if (r.data) parti.push(r.data.split('-').reverse().join('/'));
+    if (r.orario) parti.push('ore ' + r.orario);
+    if (r.nome) parti.push(r.nome);
+    return parti.filter(Boolean).join(' - ');
+  }
+
+  function mostra(selezionaId) {
+    var l = leggi();
+    var sel = document.getElementById('archivio');
+    sel.innerHTML = '<option value="">Scegli una visita salvata</option>';
+    l.slice().reverse().forEach(function (r) {
+      var o = document.createElement('option');
+      o.value = r.id;
+      o.textContent = etichetta(r);
+      sel.appendChild(o);
+    });
+    if (selezionaId) sel.value = selezionaId;
+    document.getElementById('stato-archivio').textContent =
+      l.length ? l.length + ' visite salvate su questo dispositivo.' : 'Nessuna visita salvata. Compila i campi e premi Salva.';
+  }
+
+  document.getElementById('btn-salva-visita').addEventListener('click', function () {
+    var d = campi();
+    if (!d.via && !d.numero) {
+      document.getElementById('stato-archivio').textContent = 'Inserisci almeno la via o il numero del cliente.';
+      return;
+    }
+    var l = leggi();
+    var nuova = Object.assign({ id: String(Date.now()) }, d);
+    l.push(nuova);
+    if (scrivi(l)) {
+      mostra(nuova.id);
+      document.getElementById('stato-archivio').textContent = 'Visita salvata.';
+    } else {
+      document.getElementById('stato-archivio').textContent = 'Non riesco a salvare: lo spazio del browser è pieno o bloccato.';
+    }
+  });
+
+  document.getElementById('archivio').addEventListener('change', function () {
+    var id = this.value;
+    if (!id) return;
+    var r = leggi().filter(function (x) { return x.id === id; })[0];
+    if (!r) return;
+    ['numero', 'nome', 'via', 'data', 'orario', 'orient', 'link', 'annuncio', 'mq', 'rendita'].forEach(function (k) {
+      document.getElementById(k).value = r[k] || '';
+    });
+    document.getElementById('altre').value = Array.isArray(r.altre) ? r.altre.join('\n') : '';
+    document.getElementById('mostra-link').checked = !!r.mostraLink;
+    aggiorna();
+    document.getElementById('stato-archivio').textContent = 'Visita caricata: controlla i dati e premi Apri in WhatsApp.';
+  });
+
+  document.getElementById('btn-elimina-visita').addEventListener('click', function () {
+    var id = document.getElementById('archivio').value;
+    if (!id) { document.getElementById('stato-archivio').textContent = 'Scegli prima una visita da eliminare.'; return; }
+    if (!confirm('Eliminare la visita selezionata?')) return;
+    scrivi(leggi().filter(function (x) { return x.id !== id; }));
+    mostra('');
+    document.getElementById('stato-archivio').textContent = 'Visita eliminata.';
+  });
+
+  mostra('');
+})();
+</script>
+
+
+<script>
+(function () {
+  var CAMPI_CLIENTE = ['numero', 'nome', 'data', 'orario'];
+  var CAMPI_IMMOBILE = ['via', 'orient', 'link', 'annuncio', 'mq', 'rendita'];
+
+  function svuota(lista) {
+    lista.forEach(function (k) {
+      var el = document.getElementById(k);
+      if (el) el.value = '';
+    });
+  }
+
+  function stato(testo) { document.getElementById('stato-archivio').textContent = testo; }
+
+  document.getElementById('btn-nuovo-cliente').addEventListener('click', function () {
+    svuota(CAMPI_CLIENTE);
+    document.getElementById('archivio').value = '';
+    aggiorna();
+    stato('Pronto per un nuovo cliente. Immobile invariato: inserisci nome, telefono, data e ora.');
+  });
+
+  document.getElementById('btn-nuovo-zero').addEventListener('click', function () {
+    if (!confirm('Svuotare tutti i campi per un nuovo appuntamento?')) return;
+    svuota(CAMPI_CLIENTE.concat(CAMPI_IMMOBILE));
+    document.getElementById('archivio').value = '';
+    aggiorna();
+    stato('Campi svuotati. Compila il nuovo appuntamento.');
+  });
+})();
+</script>
+
+
+<script>
+(function () {
+  var CHIAVE = 'archivio_visite_v1';
+  var CAMPI = ['numero', 'nome', 'via', 'data', 'orario', 'orient', 'link', 'annuncio', 'mq', 'rendita'];
+
+  function leggi() { try { return JSON.parse(localStorage.getItem(CHIAVE) || '[]'); } catch (e) { return []; } }
+  function scrivi(l) { try { localStorage.setItem(CHIAVE, JSON.stringify(l)); return true; } catch (e) { return false; } }
+  function stato(t) { document.getElementById('stato-archivio').textContent = t; }
+
+  function valoriAttuali() {
+    var o = {};
+    CAMPI.forEach(function (k) { o[k] = document.getElementById(k).value.trim(); });
+    o.data = document.getElementById('data').value;
+    o.orario = document.getElementById('orario').value;
+    o.altre = document.getElementById('altre').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
+    o.mostraLink = document.getElementById('mostra-link').checked;
+    return o;
+  }
+
+  document.getElementById('btn-aggiorna-visita').addEventListener('click', function () {
+    var id = document.getElementById('archivio').value;
+    if (!id) {
+      stato('Scegli prima la visita da aggiornare nel menu. Se è nuova, usa "Salva come nuova visita".');
+      return;
+    }
+    var l = leggi();
+    var trovata = false;
+    l = l.map(function (r) {
+      if (r.id !== id) return r;
+      trovata = true;
+      return Object.assign({ id: id }, valoriAttuali());
+    });
+    if (!trovata) { stato('Visita non trovata nell\'archivio.'); return; }
+    if (scrivi(l)) stato('Visita aggiornata. Il cambio è salvato sul dispositivo.');
+    else stato('Non riesco ad aggiornare: lo spazio del browser è pieno o bloccato.');
+  });
+})();
+</script>
+
+
+<script>
+(function () {
+  var CHIAVE = 'archivio_visite_v1';
+  function leggi() { try { return JSON.parse(localStorage.getItem(CHIAVE) || '[]'); } catch (e) { return []; } }
+  function scrivi(l) { try { localStorage.setItem(CHIAVE, JSON.stringify(l)); return true; } catch (e) { return false; } }
+  function stato(t) { document.getElementById('stato-archivio').textContent = t; }
+
+  document.getElementById('btn-esporta').addEventListener('click', function () {
+    var l = leggi();
+    if (!l.length) { stato('Non ci sono visite da esportare.'); return; }
+    var oggi = new Date().toISOString().slice(0, 10);
+    var contenuto = JSON.stringify({ versione: 'conferma_visita_v1.28', esportato: oggi, visite: l }, null, 2);
+    var blob = new Blob([contenuto], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'visite_backup_' + oggi + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    stato('Archivio esportato: ' + l.length + ' visite. Salva il file su Drive o iCloud.');
+  });
+
+  document.getElementById('file-importa').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var dati;
+      try { dati = JSON.parse(String(r.result || '')); } catch (err) { stato('File non valido: non è un backup di questo tool.'); return; }
+      var nuove = (dati && Array.isArray(dati.visite)) ? dati.visite : null;
+      if (!nuove) { stato('File non valido: non contiene visite.'); return; }
+      var attuali = leggi();
+      var ids = {};
+      attuali.forEach(function (x) { ids[x.id] = true; });
+      var aggiunte = 0;
+      nuove.forEach(function (x) {
+        if (x && x.id && !ids[x.id]) { attuali.push(x); ids[x.id] = true; aggiunte++; }
+      });
+      if (!scrivi(attuali)) { stato('Non riesco a importare: lo spazio del browser è pieno o bloccato.'); return; }
+      stato('Importate ' + aggiunte + ' visite nuove. Ricarico la pagina...');
+      setTimeout(function () { location.reload(); }, 1200);
+    };
+    r.readAsText(f, 'UTF-8');
+  });
+})();
+</script>
+
+
+<script>
+(function () {
+  var file = null;
+  var input = document.getElementById('file-planimetria');
+  var nome = document.getElementById('nome-planimetria');
+  var stato = document.getElementById('stato-allegato');
+
+  input.addEventListener('change', function (e) {
+    file = (e.target.files && e.target.files[0]) || null;
+    nome.textContent = file ? 'Pronta: ' + file.name : 'Nessun file scelto.';
+  });
+
+  function nomeAllegato(orig) {
+    var ext = (orig.name.match(/\.[a-zA-Z0-9]+$/) || [''])[0].toLowerCase();
+    var via = (document.getElementById('via').value || 'planimetria').trim()
+      .replace(/[\\\/:*?"<>|]/g, '').replace(/\s+/g, '_').slice(0, 40);
+    var data = document.getElementById('data').value;
+    return 'Planimetria_' + via + (data ? '_' + data : '') + ext;
+  }
+
+  document.getElementById('btn-allega').addEventListener('click', function () {
+    if (!file) { stato.textContent = 'Prima scegli la planimetria qui sopra.'; return; }
+    var fileInvio = new File([file], nomeAllegato(file), { type: file.type });
+    if (navigator.canShare && navigator.canShare({ files: [fileInvio] }) && navigator.share) {
+      navigator.share({ files: [fileInvio] }).then(function () {
+        stato.textContent = 'Scegli WhatsApp e il cliente, poi premi invio.';
+      }, function () {
+        stato.textContent = 'Invio annullato.';
+      });
+    } else {
+      var url = URL.createObjectURL(fileInvio);
+      var a = document.createElement('a');
+      a.href = url; a.download = fileInvio.name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      stato.textContent = 'Il telefono non permette di inviare direttamente: ho scaricato il file. Allegalo in WhatsApp con la graffetta.';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
