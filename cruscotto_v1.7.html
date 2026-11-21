@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<!-- Cruscotto Messaggi WhatsApp - Servizi Immobiliari Genova - v1.6 -->
-<!-- v1.2: la scheda visita punta a conferma_visita_v1_32.html. v1.1: aggiunta scheda "Scheda visita" (carica conferma_visita_v1_32.html); "Conferma" rinominata "Conferma breve" -->
+<!-- Cruscotto Messaggi WhatsApp - Servizi Immobiliari Genova - v1.7 -->
+<!-- v1.7: all'apertura nessuna scheda attiva (neutro); la scheda visita punta a conferma_visita_v1_33.html. v1.6: lettura CSV corretta (colonna DESVIA). v1.5: caricamento CSV. v1.1: scheda "Scheda visita"; "Conferma" rinominata "Conferma breve" -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Cruscotto Messaggi - v1.6</title>
+<title>Cruscotto Messaggi - v1.7</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -201,7 +201,7 @@
 <header>
   <h1>Cruscotto Messaggi</h1>
   <p>Servizi Immobiliari Genova · Francesco</p>
-  <span class="versione">v1.6</span>
+  <span class="versione">v1.7</span>
 </header>
 
 <main>
@@ -212,8 +212,10 @@
     <div class="stato-vie" id="statoCsv" style="margin-top:10px;margin-bottom:0;">Usalo solo se il download delle vie non funziona. Vale per tutte e tre le schede.</div>
   </div>
 
+  <div class="card" id="neutro" style="text-align:center;color:#6b7280;font-size:14px;line-height:1.6;">Scegli una scheda sopra per iniziare.</div>
+
   <div class="tabs">
-    <button class="tab attiva" id="tabAnticipo" onclick="setTab('anticipo')">Anticipo</button>
+    <button class="tab" id="tabAnticipo" onclick="setTab('anticipo')">Anticipo</button>
     <button class="tab" id="tabConferma" onclick="setTab('conferma')">Conferma breve</button>
     <button class="tab" id="tabScheda" onclick="setTab('scheda')">Scheda visita</button>
   </div>
@@ -274,12 +276,12 @@
 
   </div>
 
-  <!-- SEZIONE SCHEDA VISITA: carica il tool conferma_visita_v1_32.html -->
+  <!-- SEZIONE SCHEDA VISITA: carica il tool conferma_visita_v1_33.html -->
   <div id="sezioneScheda" class="hidden">
     <div class="avviso-scheda">
-      La scheda visita è il tool completo (archivio, planimetria, link). Il file <strong>conferma_visita_v1_32.html</strong> deve stare nella <strong>stessa cartella</strong> di questo file.
+      La scheda visita è il tool completo (archivio, planimetria, link). Il file <strong>conferma_visita_v1_33.html</strong> deve stare nella <strong>stessa cartella</strong> di questo file.
     </div>
-    <iframe id="frameScheda" src="conferma_visita_v1_32.html" allow="web-share; clipboard-write" title="Scheda visita"></iframe>
+    <iframe id="frameScheda" src="conferma_visita_v1_33.html" allow="web-share; clipboard-write" title="Scheda visita"></iframe>
   </div>
 
 </main>
@@ -293,7 +295,7 @@ var QUERY_VIE = '[out:json][timeout:60];area["name"="Genova"]["admin_level"="8"]
 var CACHE_KEY = 'cruscotto_vie_genova_v1';
 var CACHE_GIORNI = 30;
 
-var tabAttiva = 'anticipo';
+var tabAttiva = 'nessuna';
 var vie = [];
 
 // ===== SALUTO =====
@@ -359,6 +361,7 @@ function aggiorna() {
 // ===== CAMBIO SCHEDA =====
 function setTab(t) {
   tabAttiva = t;
+  document.getElementById('neutro').classList.add('hidden');
   document.getElementById('tabAnticipo').classList.toggle('attiva', t === 'anticipo');
   document.getElementById('tabConferma').classList.toggle('attiva', t === 'conferma');
   document.getElementById('tabScheda').classList.toggle('attiva', t === 'scheda');
@@ -502,6 +505,7 @@ document.getElementById('fileVieCsv').addEventListener('change', function (e) {
 
 // ===== AVVIO =====
 document.getElementById('campoData').classList.add('hidden');
+document.getElementById('sezioneMessaggi').classList.add('hidden');
 aggiorna();
 caricaVie(false);
 setInterval(aggiorna, 60000); // aggiorna il saluto quando cambia l'ora

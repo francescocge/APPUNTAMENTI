@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Conferma visita - Tool v1.32 - v1.32: lettura CSV corretta (colonna DESVIA, non CODVIA) - v1.31: download vie con la stessa richiesta del cruscotto; se fallisce usa la lista gia scaricata dal cruscotto - v1.30: elenco vie scaricato dal confine intero del Comune di Genova (prima un rettangolo che perdeva Pegli, Voltri, Nervi) - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
+<!-- Conferma visita - Tool v1.33 - v1.33: aggiunte opzioni orientamento Nord/Sud ed Est/Ovest; versione nel backup aggiornata - v1.32: lettura CSV corretta (colonna DESVIA, non CODVIA) - v1.31: download vie con la stessa richiesta del cruscotto; se fallisce usa la lista gia scaricata dal cruscotto - v1.30: elenco vie scaricato dal confine intero del Comune di Genova (prima un rettangolo che perdeva Pegli, Voltri, Nervi) - v1.29: suggerimenti vie con elenco sotto il campo (non piu datalist, che su molti telefoni non funzionava) - v1.28: i pulsanti WhatsApp si aprono in una nuova scheda, cosi' il tool resta disponibile per inviare planimetria e link; link con titolo appartamento e spazi tra i due link - v1.27: due messaggi separati - v1.26: link in fondo - v1.23: planimetria inviata con nome leggibile (Planimetria_via_data) e senza titolo 'Planimetria' che WhatsApp mostrava come 'link' - v1.22: archivio salva caratteristiche e link - v1.21: caratteristiche nel messaggio -->
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferma visita - v1.32</title>
+<title>Conferma visita - v1.33</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -84,7 +84,7 @@
 <div class="testata">
   <h1>Conferma visita</h1>
   <p>Francesco - Servizi Immobiliari Genova</p>
-  <span class="versione">Versione 1.32</span>
+  <span class="versione">Versione 1.33</span>
 </div>
 
 <div class="contenuto">
@@ -187,6 +187,7 @@ Balcone</textarea>
     <option value="">Non indicare</option>
     <option>Nord</option><option>Nord-Est</option><option>Est</option><option>Sud-Est</option>
     <option>Sud</option><option>Sud-Ovest</option><option>Ovest</option><option>Nord-Ovest</option>
+    <option>Nord/Sud</option><option>Est/Ovest</option>
   </select>
 </div>
 
@@ -573,7 +574,7 @@ aggiorna();
     var l = leggi();
     if (!l.length) { stato('Non ci sono visite da esportare.'); return; }
     var oggi = new Date().toISOString().slice(0, 10);
-    var contenuto = JSON.stringify({ versione: 'conferma_visita_v1.28', esportato: oggi, visite: l }, null, 2);
+    var contenuto = JSON.stringify({ versione: 'conferma_visita_v1.33', esportato: oggi, visite: l }, null, 2);
     var blob = new Blob([contenuto], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
